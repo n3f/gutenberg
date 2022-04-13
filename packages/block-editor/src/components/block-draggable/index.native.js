@@ -9,6 +9,8 @@ import Animated, {
 	useSharedValue,
 	withDelay,
 	withTiming,
+	ZoomInEasyDown,
+	ZoomOutEasyDown,
 } from 'react-native-reanimated';
 import TextInputState from 'react-native/Libraries/Components/TextInput/TextInputState';
 
@@ -18,6 +20,7 @@ import TextInputState from 'react-native/Libraries/Components/TextInput/TextInpu
 import { Draggable, DraggableTrigger } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useEffect, useRef, useState, Platform } from '@wordpress/element';
+import { getBlockType } from '@wordpress/blocks';
 
 /**
  * Internal dependencies
@@ -60,6 +63,18 @@ const BlockDraggableWrapper = ( { children } ) => {
 		stopDraggingBlocks,
 	} = useDispatch( blockEditorStore );
 
+	const { blockIcon } = useSelect(
+		( select ) => {
+			const { getBlockName } = select( blockEditorStore );
+			const blockName = getBlockName( currentClientId );
+
+			return {
+				blockIcon: getBlockType( blockName )?.icon,
+			};
+		},
+		[ currentClientId ]
+	);
+
 	const { scrollRef } = useBlockListContext();
 	const animatedScrollRef = useAnimatedRef();
 	animatedScrollRef( scrollRef );
@@ -72,7 +87,6 @@ const BlockDraggableWrapper = ( { children } ) => {
 		y: useSharedValue( 0 ),
 		width: useSharedValue( 0 ),
 		height: useSharedValue( 0 ),
-		scale: useSharedValue( 0 ),
 	};
 	const isDragging = useSharedValue( false );
 
@@ -146,7 +160,6 @@ const BlockDraggableWrapper = ( { children } ) => {
 
 		isDragging.value = true;
 
-		chip.scale.value = withTiming( 1 );
 		runOnJS( onStartDragging )( { clientId: id, position: dragPosition } );
 	};
 
@@ -166,7 +179,6 @@ const BlockDraggableWrapper = ( { children } ) => {
 		'worklet';
 		isDragging.value = false;
 
-		chip.scale.value = withTiming( 0 );
 		stopScrolling();
 		runOnJS( onStopDragging )();
 	};
@@ -181,8 +193,6 @@ const BlockDraggableWrapper = ( { children } ) => {
 						chip.height.value -
 						CHIP_OFFSET_TO_TOUCH_POSITION,
 				},
-				{ scaleX: chip.scale.value },
-				{ scaleY: chip.scale.value },
 			],
 		};
 	} );
@@ -210,7 +220,14 @@ const BlockDraggableWrapper = ( { children } ) => {
 				style={ chipStyles }
 				pointerEvents="none"
 			>
-				<DraggableChip />
+				{ blockIcon && (
+					<Animated.View
+						entering={ ZoomInEasyDown }
+						exiting={ ZoomOutEasyDown }
+					>
+						<DraggableChip icon={ blockIcon } />
+					</Animated.View>
+				) }
 			</Animated.View>
 		</>
 	);
