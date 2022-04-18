@@ -90,21 +90,18 @@ function BlockPopover( {
 	// Controls when the side inserter on empty lines should
 	// be shown, including writing and selection modes.
 	const showEmptyBlockSideInserter =
-		! isTyping &&
-		! editorMode === 'visual' &&
-		isEmptyDefaultBlock &&
-		isValid;
+		! isTyping && ! editorMode === 'edit' && isEmptyDefaultBlock && isValid;
 	const shouldShowBreadcrumb =
 		editorMode === 'navigation' || editorMode === 'exploded';
 	const shouldShowContextualToolbar =
-		editorMode === 'visual' &&
+		editorMode === 'edit' &&
 		! hasFixedToolbar &&
 		isLargeViewport &&
 		! showEmptyBlockSideInserter &&
 		! isMultiSelecting &&
 		( ! isTyping || isCaretWithinFormattedText );
 	const canFocusHiddenToolbar =
-		editorMode === 'visual' &&
+		editorMode === 'edit' &&
 		! shouldShowContextualToolbar &&
 		! hasFixedToolbar &&
 		! isEmptyDefaultBlock;
