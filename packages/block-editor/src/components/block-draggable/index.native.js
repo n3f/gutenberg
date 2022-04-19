@@ -18,6 +18,7 @@ import TextInputState from 'react-native/Libraries/Components/TextInput/TextInpu
 import { Draggable, DraggableTrigger } from '@wordpress/components';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useEffect, useRef, useState, Platform } from '@wordpress/element';
+import { generateHapticFeedback } from '@wordpress/react-native-bridge';
 
 /**
  * Internal dependencies
@@ -112,6 +113,7 @@ const BlockDraggableWrapper = ( { children } ) => {
 			startDraggingBlocks( [ clientId ] );
 			setCurrentClientId( clientId );
 			runOnUI( startScrolling )( position.y );
+			generateHapticFeedback();
 		} else {
 			// We stop dragging if no block is found.
 			runOnUI( stopDragging )();
