@@ -19,10 +19,10 @@ import {
 	InsertionPointOpenRef,
 	default as InsertionPoint,
 } from './insertion-point';
-import BlockPopover from './block-popover';
+import SelectedBlockPopover from './selected-block-popover';
 import { store as blockEditorStore } from '../../store';
 import BlockContextualToolbar from './block-contextual-toolbar';
-import { usePopoverScroll } from './use-popover-scroll';
+import { usePopoverScroll } from '../block-popover';
 
 /**
  * Renders block tools (the block toolbar, select/navigation mode toolbar, the
@@ -132,7 +132,9 @@ export default function BlockTools( {
 					) }
 				{ /* Even if the toolbar is fixed, the block popover is still
 					needed for navigation and exploded mode. */ }
-				<BlockPopover __unstableContentRef={ __unstableContentRef } />
+				<SelectedBlockPopover
+					__unstableContentRef={ __unstableContentRef }
+				/>
 				{ /* Used for the inline rich text toolbar. */ }
 				<Popover.Slot name="block-toolbar" ref={ blockToolbarRef } />
 				{ children }
