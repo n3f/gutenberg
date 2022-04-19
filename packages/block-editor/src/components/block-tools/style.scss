@@ -4,6 +4,10 @@
 
 .block-editor-block-list__insertion-point {
 	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 }
 
 .block-editor-block-list__insertion-point-indicator {
@@ -186,37 +190,6 @@
 	.block-editor-block-mover {
 		background: unset;
 		border: none;
-	}
-}
-
-/**
- * Popovers.
- */
-
-.block-editor-block-list__insertion-point-popover.is-without-arrow {
-	z-index: z-index(".block-editor-block-list__insertion-point-popover");
-	position: absolute;
-	pointer-events: none;
-
-	* {
-		pointer-events: none;
-	}
-
-	.is-with-inserter {
-		pointer-events: all;
-
-		* {
-			pointer-events: all;
-		}
-	}
-
-	.components-popover__content.components-popover__content {
-		// Needs specificity.
-		background: none;
-		border: none;
-		box-shadow: none;
-		overflow-y: visible;
-		margin-left: 0;
 	}
 }
 
