@@ -18,7 +18,7 @@ import TextInputState from 'react-native/Libraries/Components/TextInput/TextInpu
  * WordPress dependencies
  */
 import { Draggable, DraggableTrigger } from '@wordpress/components';
-import { useSelect, useDispatch } from '@wordpress/data';
+import { select, useSelect, useDispatch } from '@wordpress/data';
 import { useEffect, useRef, useState, Platform } from '@wordpress/element';
 import { getBlockType } from '@wordpress/blocks';
 
@@ -55,25 +55,13 @@ const DEFAULT_LONG_PRESS_MIN_DURATION = 500;
  * @return {Function} Render function that passes `onScroll` event handler.
  */
 const BlockDraggableWrapper = ( { children } ) => {
-	const [ currentClientId, setCurrentClientId ] = useState();
+	const [ draggedBlockIcon, setDraggedBlockIcon ] = useState();
 
 	const {
 		selectBlock,
 		startDraggingBlocks,
 		stopDraggingBlocks,
 	} = useDispatch( blockEditorStore );
-
-	const { blockIcon } = useSelect(
-		( select ) => {
-			const { getBlockName } = select( blockEditorStore );
-			const blockName = getBlockName( currentClientId );
-
-			return {
-				blockIcon: getBlockType( blockName )?.icon,
-			};
-		},
-		[ currentClientId ]
-	);
 
 	const { scrollRef } = useBlockListContext();
 	const animatedScrollRef = useAnimatedRef();
@@ -121,10 +109,18 @@ const BlockDraggableWrapper = ( { children } ) => {
 		};
 	}, [] );
 
+	const setDraggedBlockIconByClientId = ( clientId ) => {
+		const blockName = select( blockEditorStore ).getBlockName( clientId );
+		const blockIcon = getBlockType( blockName )?.icon;
+		if ( blockIcon ) {
+			setDraggedBlockIcon( blockIcon );
+		}
+	};
+
 	const onStartDragging = ( { clientId, position } ) => {
 		if ( clientId ) {
 			startDraggingBlocks( [ clientId ] );
-			setCurrentClientId( clientId );
+			setDraggedBlockIconByClientId( clientId );
 			runOnUI( startScrolling )( position.y );
 		} else {
 			// We stop dragging if no block is found.
@@ -132,16 +128,16 @@ const BlockDraggableWrapper = ( { children } ) => {
 		}
 	};
 
-	const onStopDragging = () => {
-		if ( currentClientId ) {
+	const onStopDragging = ( { clientId } ) => {
+		if ( clientId ) {
 			onBlockDrop( {
 				// Dropping is only allowed at root level
 				srcRootClientId: '',
-				srcClientIds: [ currentClientId ],
+				srcClientIds: [ clientId ],
 				type: 'block',
 			} );
-			selectBlock( currentClientId );
-			setCurrentClientId( undefined );
+			selectBlock( clientId );
+			setDraggedBlockIcon( undefined );
 		}
 		onBlockDragEnd();
 		stopDraggingBlocks();
@@ -179,12 +175,12 @@ const BlockDraggableWrapper = ( { children } ) => {
 		scrollOnDragOver( dragPosition.y );
 	};
 
-	const stopDragging = () => {
+	const stopDragging = ( { id } ) => {
 		'worklet';
 		isDragging.value = false;
 
 		stopScrolling();
-		runOnJS( onStopDragging )();
+		runOnJS( onStopDragging )( { clientId: id } );
 	};
 
 	const chipDynamicStyles = useAnimatedStyle( () => {
@@ -224,12 +220,12 @@ const BlockDraggableWrapper = ( { children } ) => {
 				style={ chipStyles }
 				pointerEvents="none"
 			>
-				{ blockIcon && (
+				{ draggedBlockIcon && (
 					<Animated.View
 						entering={ ZoomInEasyDown }
 						exiting={ ZoomOutEasyDown }
 					>
-						<DraggableChip icon={ blockIcon } />
+						<DraggableChip icon={ draggedBlockIcon } />
 					</Animated.View>
 				) }
 			</Animated.View>
@@ -272,13 +268,13 @@ const BlockDraggable = ( { clientId, children, enabled = true } ) => {
 	};
 
 	const { isDraggable, isBeingDragged, canDragBlock } = useSelect(
-		( select ) => {
+		( _select ) => {
 			const {
 				getBlockRootClientId,
 				getTemplateLock,
 				isBlockBeingDragged,
 				hasSelectedBlock,
-			} = select( blockEditorStore );
+			} = _select( blockEditorStore );
 			const rootClientId = getBlockRootClientId( clientId );
 			const templateLock = rootClientId
 				? getTemplateLock( rootClientId )
