@@ -234,6 +234,7 @@ function BlockSelectionButton( { clientId, rootClientId, blockElement } ) {
 		'block-editor-block-list__block-selection-button',
 		{
 			'is-block-moving-mode': !! blockMovingMode,
+			'is-exploded-mode': editorMode === 'exploded',
 		}
 	);
 
